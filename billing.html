@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hospital Management System</title>
+
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .box {
+            width: 100%;
+            max-width: 450px;
+            padding: 25px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .highlight {
+            font-size: 32px;
+            font-weight: bold;
+            color: #4facfe;
+            margin: 10px 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .records {
+            width: 100%;
+            max-width: 450px;
+            max-height: 350px;
+            overflow-y: auto;
+            padding: 20px;
+            color: #333;
+        }
+
+        .item {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+
+        .summary {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid rgba(46, 204, 113, 0.4);
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 18px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .date {
+            font-size: 16px;
+            color: #ddd;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2 onclick="goTo('dashboard.html')">🏥 HMS</h2>
+
+    <ul>
+        <li onclick="goTo('dashboard.html')"><span>📊</span> Dashboard</li>
+        <li onclick="goTo('add.html')"><span>➕</span> Add Patient</li>
+        <li onclick="goTo('doctor.html')"><span>👨‍⚕️</span> Doctors</li>
+        <li onclick="goTo('appointment.html')"><span>📅</span> Appointments</li>
+        <li onclick="goTo('billing.html')" class="active"><span>💳</span> Billing</li>
+    </ul>
+</div>
+
+<div class="main">
+
+    <h2 class="header">BILLING</h2>
+
+    <div class="box glass-dark">
+        <div class="date" id="todayDate"></div>
+        <h3>Today's Revenue</h3>
+        <p id="revenue" class="highlight">₹0</p>
+        <p>Total Appointments: <span id="count">0</span></p>
+        <p>Charge per Appointment: ₹500</p>
+    </div>
+
+    <div class="records glass">
+        <h3>Today's Appointments</h3>
+        <div id="list"></div>
+
+        <div class="summary" id="summaryBox">
+            Total Revenue: ₹0
+        </div>
+    </div>
+
+</div>
+
+<script>
+let appointments = JSON.parse(localStorage.getItem("appointments")) || [];
+
+let today = new Date().toISOString().split("T")[0];
+
+/* Show today's date nicely */
+document.getElementById("todayDate").innerText =
+    "Date: " + new Date().toLocaleDateString();
+
+function loadBilling() {
+    let list = document.getElementById("list");
+    let revenueBox = document.getElementById("revenue");
+    let container = document.querySelector(".records");
+    let countBox = document.getElementById("count");
+    let summary = document.getElementById("summaryBox");
+
+    let todayAppointments = appointments.filter(a => a.date === today);
+
+    if (todayAppointments.length === 0) {
+        container.style.display = "none";
+        revenueBox.innerText = "₹0";
+        countBox.innerText = "0";
+        return;
+    } else {
+        container.style.display = "block";
+    }
+
+    list.innerHTML = "";
+
+    todayAppointments.forEach((a, i) => {
+        list.innerHTML += `
+        <div class="item glass">
+            <b>${i+1}. ${a.name}</b><br>
+            Disease: ${a.disease}<br>
+            Doctor: ${a.doctor}<br>
+            Charge: ₹500
+        </div>`;
+    });
+
+    let revenue = todayAppointments.length * 500;
+
+    revenueBox.innerText = "₹" + revenue;
+    countBox.innerText = todayAppointments.length;
+    summary.innerText = "Total Revenue: ₹" + revenue;
+}
+
+function goTo(p){ window.location.href = p; }
+
+loadBilling();
+</script>
+
+</body>
+</html>

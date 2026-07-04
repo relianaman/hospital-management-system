@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hospital Management System</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2 onclick="goTo('dashboard.html')">🏥 HMS</h2>
+    <ul>
+        <li onclick="goTo('dashboard.html')"><span>📊</span> Dashboard</li>
+        <li onclick="goTo('add.html')"><span>➕</span> Add Patient</li>
+        <li onclick="goTo('doctor.html')"><span>👨‍⚕️</span> Doctors</li>
+        <li onclick="goTo('appointment.html')" class="active"><span>📅</span> Appointments</li>
+        <li onclick="goTo('billing.html')"><span>💳</span> Billing</li>
+    </ul>
+</div>
+
+<div class="main">
+
+    <div class="header">APPOINTMENTS</div>
+
+    <div class="form-container glass-dark">
+        <h3>Book Appointment</h3>
+
+        <select id="patientSelect" onchange="fillDisease()">
+            <option value="">-- Select Patient --</option>
+        </select>
+
+        <input type="text" id="disease" placeholder="Disease" disabled>
+
+        <div class="input-group">
+            <input type="date" id="date" title="Choose Appointment Date">
+            <select id="time" title="Choose Appointment Time">
+                <option value="">-- Select Time --</option>
+                <option value="09:00">09:00 AM</option>
+                <option value="09:30">09:30 AM</option>
+                <option value="10:00">10:00 AM</option>
+                <option value="10:30">10:30 AM</option>
+                <option value="11:00">11:00 AM</option>
+                <option value="11:30">11:30 AM</option>
+                <option value="12:00">12:00 PM</option>
+                <option value="12:30">12:30 PM</option>
+                <option value="13:00">01:00 PM</option>
+                <option value="13:30">01:30 PM</option>
+                <option value="14:00">02:00 PM</option>
+                <option value="14:30">02:30 PM</option>
+                <option value="15:00">03:00 PM</option>
+                <option value="15:30">03:30 PM</option>
+                <option value="16:00">04:00 PM</option>
+                <option value="16:30">04:30 PM</option>
+                <option value="17:00">05:00 PM</option>
+            </select>
+        </div>
+
+        <button onclick="book()">Book Appointment</button>
+    </div>
+
+    <div class="records glass" id="recordsBox">
+        <h3>Appointments</h3>
+        <div id="list"></div>
+    </div>
+
+</div>
+
+<script>
+let patients = JSON.parse(localStorage.getItem("patients")) || [];
+let appointments = JSON.parse(localStorage.getItem("appointments")) || [];
+
+let select = document.getElementById("patientSelect");
+
+// Load patients
+patients.forEach((p, i) => {
+    select.innerHTML += `<option value="${i}">${p.name}</option>`;
+});
+
+// Auto-fill disease
+function fillDisease() {
+    let index = select.value;
+    document.getElementById("disease").value = index !== "" ? patients[index].disease : "";
+    updateTimeOptions(); // Refresh time slots when patient (and thus doctor) changes
+}
+
+// Date and Time Constraints
+let dateInput = document.getElementById("date");
+let timeSelect = document.getElementById("time");
+let todayStr = new Date().toISOString().split("T")[0];
+dateInput.setAttribute("min", todayStr); // Disable past dates
+
+dateInput.addEventListener("change", updateTimeOptions);
+
+function updateTimeOptions() {
+    let selectedDate = dateInput.value;
+    let selectedPatientIndex = select.value;
+    
+    // Determine the doctor for the selected patient
+    let assignedDoctor = "";
+    if (selectedPatientIndex !== "") {
+        let p = patients[selectedPatientIndex];
+        assignedDoctor = assignDoctor(p.disease);
+    }
+
+    // Find all times already booked for this doctor on the selected date
+    let bookedTimes = appointments
+        .filter(a => a.date === selectedDate && a.doctor === assignedDoctor)
+        .map(a => a.time);
+
+    let now = new Date();
+    let currentTimeFloat = now.getHours() + (now.getMinutes() / 60);
+
+    for (let i = 1; i < timeSelect.options.length; i++) {
+        let option = timeSelect.options[i];
+        let val = option.value;
+        let parts = val.split(":");
+        let optionTimeFloat = parseInt(parts[0]) + (parseInt(parts[1]) / 60);
+
+        let isPastToday = (selectedDate === todayStr && optionTimeFloat <= currentTimeFloat);
+        let isBooked = bookedTimes.includes(val);
+
+        if (isPastToday || isBooked) {
+            option.disabled = true;
+            option.style.display = 'none';
+        } else {
+            option.disabled = false;
+            option.style.display = 'block';
+        }
+    }
+    
+    // Clear the time selection if the user had a past or booked time selected
+    if (timeSelect.options[timeSelect.selectedIndex] && timeSelect.options[timeSelect.selectedIndex].disabled) {
+        timeSelect.value = "";
+    }
+}
+// Run once on load
+updateTimeOptions();
+
+// Assign doctor
+function assignDoctor(d) {
+    d = d.toLowerCase();
+
+    if (d.includes("heart")) return "Cardiologist : Dr. Raj Sharma";
+    if (d.includes("skin")) return "Dermatologist : Dr. Priya Verma";
+    if (d.includes("bone")) return "Orthopedic : Dr. Amit Gupta";
+    if (d.includes("migraine")) return "Neurologist : Dr. Vikram Mehta";
+
+    return "General Physician : Dr. Neha Singh";
+}
+
+// Book appointment (🔥 duplicate blocked by name)
+function book() {
+    let index = select.value;
+    let date = document.getElementById("date").value;
+    let time = document.getElementById("time").value;
+
+    if (index === "" || date === "" || time === "") {
+        alert("⚠️ Fill all fields!");
+        return;
+    }
+
+    if (time.split(':')[1] !== '00' && time.split(':')[1] !== '30') {
+        alert("⚠️ Time must be in 30-minute intervals (e.g., 10:00 or 10:30)!");
+        return;
+    }
+
+    let p = patients[index];
+    let assignedDoctor = assignDoctor(p.disease);
+
+    // 🔥 Check duplicate by patient on same date
+    let patientHasAppt = appointments.some(a => a.name === p.name && a.date === date);
+
+    if (patientHasAppt) {
+        alert("❌ Patient already has an appointment on this date!");
+        return;
+    }
+
+    // 🔥 Check duplicate by doctor at same date and time
+    let doctorBusy = appointments.some(a => a.doctor === assignedDoctor && a.date === date && a.time === time);
+
+    if (doctorBusy) {
+        alert("❌ Doctor is already booked at this time! Please select another time.");
+        return;
+    }
+
+    let obj = {
+        name: p.name,
+        disease: p.disease,
+        doctor: assignedDoctor,
+        date: date,
+        time: time
+    };
+
+    appointments.push(obj);
+    localStorage.setItem("appointments", JSON.stringify(appointments));
+
+    alert("✅ Appointment Booked!");
+    display();
+}
+
+// Display
+function display() {
+    let list = document.getElementById("list");
+    let box = document.getElementById("recordsBox");
+
+    list.innerHTML = "";
+    
+    let now = new Date();
+    let todayStr = now.toISOString().split("T")[0];
+    let currentTimeFloat = now.getHours() + (now.getMinutes() / 60);
+
+    let activeCount = 0;
+
+    appointments.forEach((a, originalIndex) => {
+        let isPast = false;
+        
+        if (a.date < todayStr) {
+            isPast = true;
+        } else if (a.date === todayStr) {
+            let parts = a.time.split(":");
+            let apptTimeFloat = parseInt(parts[0]) + (parseInt(parts[1]) / 60);
+            if (apptTimeFloat <= currentTimeFloat) {
+                isPast = true;
+            }
+        }
+
+        // Only display if it's an upcoming appointment
+        if (!isPast) {
+            activeCount++;
+            list.innerHTML += `
+            <div class="appointment glass" style="margin-bottom:10px; padding:15px;">
+                <b>${a.name}</b><br>
+                Disease: ${a.disease}<br>
+                Doctor: ${a.doctor}<br>
+                Date: ${a.date}<br>
+                Time: ${a.time}
+                <button class="delete-btn" onclick="del(${originalIndex})">Cancel</button>
+            </div>`;
+        }
+    });
+
+    if (activeCount === 0) {
+        box.style.display = "none";
+    } else {
+        box.style.display = "block";
+    }
+}
+
+// Delete
+function del(i) {
+    appointments.splice(i, 1);
+    localStorage.setItem("appointments", JSON.stringify(appointments));
+    display();
+}
+
+// Navigation
+function goTo(page) {
+    window.location.href = page;
+}
+
+display();
+</script>
+
+</body>
+</html>

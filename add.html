@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hospital Management System</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2 onclick="goTo('dashboard.html')">🏥 HMS</h2>
+
+    <ul>
+        <li onclick="goTo('dashboard.html')"><span>📊</span> Dashboard</li>
+        <li onclick="goTo('add.html')" class="active"><span>➕</span> Add Patient</li>
+        <li onclick="goTo('doctor.html')"><span>👨‍⚕️</span> Doctors</li>
+        <li onclick="goTo('appointment.html')"><span>📅</span> Appointments</li>
+        <li onclick="goTo('billing.html')"><span>💳</span> Billing</li>
+        
+    </ul>
+</div>
+
+<div class="main">
+
+    <div class="header">ADD PATIENT</div>
+
+    <div class="form-container glass-dark">
+        <h3>Add Patient</h3>
+
+        <input type="text" id="name" placeholder="Patient Name">
+        <input type="number" id="age" placeholder="Age">
+
+        <!-- 🔥 Disease Dropdown -->
+        <select id="diseaseSelect" onchange="checkOther()">
+            <option value="">-- Select Disease --</option>
+            <option>Heart Disease</option>
+            <option>Skin Allergy</option>
+            <option>Bone Fracture</option>
+            <option>Migraine</option>
+            <option>Fever</option>
+            <option>Other</option>
+        </select>
+
+        <!-- 🔥 Manual input -->
+        <input type="text" id="otherDisease" placeholder="Enter Disease" style="display: none;">
+
+        <button onclick="addPatient()">Add Patient</button>
+    </div>
+
+    <div class="records glass">
+        <h3>Patient Records</h3>
+        <div id="list"></div>
+    </div>
+
+</div>
+
+<script>
+let patients = JSON.parse(localStorage.getItem("patients")) || [];
+displayPatients();
+
+/* 🔹 Show input if "Other" selected */
+function checkOther() {
+    let select = document.getElementById("diseaseSelect").value;
+    let otherInput = document.getElementById("otherDisease");
+
+    if (select === "Other") {
+        otherInput.style.display = "block";
+    } else {
+        otherInput.style.display = "none";
+    }
+}
+
+function addPatient() {
+    let name = document.getElementById("name").value.trim();
+    let age = document.getElementById("age").value.trim();
+    let selectedDisease = document.getElementById("diseaseSelect").value;
+    let otherDisease = document.getElementById("otherDisease").value.trim();
+
+    let disease = selectedDisease === "Other" ? otherDisease : selectedDisease;
+
+    if (name === "" || age === "" || disease === "") {
+        alert("⚠️ Please fill all fields!");
+        return;
+    }
+
+    let exists = patients.some(p =>
+        p.name.toLowerCase() === name.toLowerCase()
+    );
+
+    if (exists) {
+        alert("❌ Patient already exists!");
+        return;
+    }
+
+    let patient = { name, age, disease };
+
+    patients.push(patient);
+    localStorage.setItem("patients", JSON.stringify(patients));
+
+    alert("✅ Patient added!");
+
+    displayPatients();
+
+    document.getElementById("name").value = "";
+    document.getElementById("age").value = "";
+    document.getElementById("diseaseSelect").value = "";
+    document.getElementById("otherDisease").value = "";
+    document.getElementById("otherDisease").style.display = "none";
+}
+
+function displayPatients() {
+    let list = document.getElementById("list");
+    list.innerHTML = "";
+
+    patients.forEach((p, index) => {
+        list.innerHTML += `
+            <div class="patient glass" style="margin-bottom:10px; padding:15px;">
+                <b>Name:</b> ${p.name} <br>
+                <b>Age:</b> ${p.age} <br>
+                <b>Disease:</b> ${p.disease} <br>
+                <button class="delete-btn" onclick="deletePatient(${index})">Delete</button>
+            </div>
+        `;
+    });
+}
+
+function deletePatient(index) {
+    patients.splice(index, 1);
+    localStorage.setItem("patients", JSON.stringify(patients));
+    displayPatients();
+}
+
+function goTo(page) {
+    window.location.href = page;
+}
+</script>
+
+</body>
+</html>

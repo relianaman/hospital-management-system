@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hospital Management System</title>
+
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .doctor-box {
+            width: 100%;
+            max-width: 600px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            align-items: start;
+        }
+
+        .doctor {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        .doctor:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .doctor h3 {
+            color: #1e2a38;
+            margin-bottom: 5px;
+        }
+        
+        .doctor p {
+            color: #333;
+            margin: 3px 0;
+            font-weight: 500;
+        }
+
+        .full-profile {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            margin-top: 0;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .doctor:hover .full-profile {
+            max-height: 200px;
+            opacity: 1;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- 🔹 Sidebar -->
+<div class="sidebar">
+    <h2 onclick="goTo('dashboard.html')">🏥 HMS</h2>
+
+    <ul>
+        <li onclick="goTo('dashboard.html')"><span>📊</span> Dashboard</li>
+        <li onclick="goTo('add.html')"><span>➕</span> Add Patient</li>
+        <li onclick="goTo('doctor.html')" class="active"><span>👨‍⚕️</span> Doctors</li>
+        <li onclick="goTo('appointment.html')"><span>📅</span> Appointments</li>
+        <li onclick="goTo('billing.html')"><span>💳</span> Billing</li>
+    </ul>
+</div>
+
+<!-- 🔹 Main -->
+<div class="main">
+
+    <div class="header">DOCTORS</div>
+
+    <div class="doctor-box">
+
+        <div class="doctor glass">
+            <h3>Dr. Raj Sharma</h3>
+            <p>Cardiologist</p>
+            <p>Experience: 10 years</p>
+            <div class="full-profile">
+                <b>Email:</b> dr.raj@hms.com<br>
+                <b>Phone:</b> +91 9876543210<br>
+                <b>Degree:</b> MBBS, MD (Cardiology)<br>
+                <b>Bio:</b> Expert in heart conditions and surgeries.
+            </div>
+        </div>
+
+        <div class="doctor glass">
+            <h3>Dr. Priya Verma</h3>
+            <p>Dermatologist</p>
+            <p>Experience: 7 years</p>
+            <div class="full-profile">
+                <b>Email:</b> dr.priya@hms.com<br>
+                <b>Phone:</b> +91 9876543211<br>
+                <b>Degree:</b> MBBS, MD (Dermatology)<br>
+                <b>Bio:</b> Specialist in skin allergies and treatments.
+            </div>
+        </div>
+
+        <div class="doctor glass">
+            <h3>Dr. Amit Gupta</h3>
+            <p>Orthopedic</p>
+            <p>Experience: 12 years</p>
+            <div class="full-profile">
+                <b>Email:</b> dr.amit@hms.com<br>
+                <b>Phone:</b> +91 9876543212<br>
+                <b>Degree:</b> MBBS, MS (Orthopedics)<br>
+                <b>Bio:</b> Renowned surgeon for bone fractures and joint replacement.
+            </div>
+        </div>
+
+        <div class="doctor glass">
+            <h3>Dr. Vikram Mehta</h3>
+            <p>Neurologist</p>
+            <p>Experience: 15 years</p>
+            <div class="full-profile">
+                <b>Email:</b> dr.vikram@hms.com<br>
+                <b>Phone:</b> +91 9876543213<br>
+                <b>Degree:</b> MBBS, DM (Neurology)<br>
+                <b>Bio:</b> Specializes in brain disorders, migraines, and nerve issues.
+            </div>
+        </div>
+
+        <div class="doctor glass">
+            <h3>Dr. Neha Singh</h3>
+            <p>General Physician</p>
+            <p>Experience: 8 years</p>
+            <div class="full-profile">
+                <b>Email:</b> dr.neha@hms.com<br>
+                <b>Phone:</b> +91 9876543214<br>
+                <b>Degree:</b> MBBS<br>
+                <b>Bio:</b> Your primary contact for fever, flu, and general ailments.
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+function goTo(page) {
+    window.location.href = page;
+}
+</script>
+
+</body>
+</html>
